@@ -1,0 +1,41 @@
+name: suduwella_stock_manager
+description: A professional Flutter BLoC application.
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_bloc: ^9.0.0
+  equatable: ^2.0.5
+
+  # Dependency Injection
+  get_it: ^8.0.3
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # Functional / error handling (Either, Option)
+  dartz: ^0.10.1
+
+  # Local packages
+  api_client:
+    path: packages/api_client
+  push_notifications:
+    path: packages/push_notifications
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  bloc_test: ^10.0.0
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
