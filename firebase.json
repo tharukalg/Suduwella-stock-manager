@@ -1,0 +1,29 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "suduwella-stock-manager-f7d90",
+          "appId": "1:138672203429:android:f654c48731dbc3f2984f4c",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "suduwella-stock-manager-f7d90",
+          "configurations": {
+            "android": "1:138672203429:android:f654c48731dbc3f2984f4c"
+          }
+        }
+      }
+    }
+  },
+  "emulators": {
+    "dataconnect": {
+      "dataDir": "dataconnect/.dataconnect/pgliteData"
+    }
+  },
+  "dataconnect": {
+    "source": "dataconnect"
+  }
+}

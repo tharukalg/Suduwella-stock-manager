@@ -17,6 +17,8 @@ dependencies:
 
   # Dependency Injection
   get_it: ^8.0.3
+  intl: ^0.20.2
+  image_picker: ^1.1.2
 
   # Navigation
   go_router: ^14.0.0
@@ -24,11 +26,18 @@ dependencies:
   # Functional / error handling (Either, Option)
   dartz: ^0.10.1
 
+  # Local storage
+  sqflite: ^2.4.2
+  path: ^1.9.1
+
   # Local packages
   api_client:
     path: packages/api_client
   push_notifications:
     path: packages/push_notifications
+  firebase_core: ^4.9.0
+  firebase_data_connect: ^0.3.0+2
+  firebase_auth: ^6.5.1
 
 dev_dependencies:
   flutter_test:

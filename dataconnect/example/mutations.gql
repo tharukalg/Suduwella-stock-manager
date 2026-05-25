@@ -1,0 +1,370 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Suduwella Stock Manager — Data Connect Mutations
+# @auth(level: USER_ANON)  → no Firebase Auth required (MVP / development).
+# Upgrade to @auth(level: USER) once Firebase Auth is added.
+# insecureReason: This is an internal staff-only app; all authenticated users
+#                 are trusted employees — no per-user data isolation needed.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── branches ────────────────────────────────────────────────────────────────
+mutation UpsertBranch($id: String!, $name: String!, $isActive: Boolean!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  branch_upsert(data: {
+    id: $id
+    name: $name
+    isActive: $isActive
+  })
+}
+
+mutation DeleteBranch($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  branch_delete(id: $id)
+}
+
+# ─── products ────────────────────────────────────────────────────────────────
+mutation UpsertProduct(
+  $id: String!
+  $productName: String!
+  $modelNo: String!
+  $price: Float!
+  $imagePath: String
+  $createdAt: Float!
+  $updatedAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  product_upsert(data: {
+    id: $id
+    productName: $productName
+    modelNo: $modelNo
+    price: $price
+    imagePath: $imagePath
+    createdAt: $createdAt
+    updatedAt: $updatedAt
+    syncStatus: "synced"
+  })
+}
+
+mutation DeleteProduct($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  product_delete(id: $id)
+}
+
+# ─── stock_items ─────────────────────────────────────────────────────────────
+mutation UpsertStockItem(
+  $id: String!
+  $productId: String!
+  $branchCode: String!
+  $serialNo: String!
+  $status: String!
+  $createdAt: Float!
+  $updatedAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  stockItem_upsert(data: {
+    id: $id
+    product: { id: $productId }
+    branch: { id: $branchCode }
+    serialNo: $serialNo
+    status: $status
+    createdAt: $createdAt
+    updatedAt: $updatedAt
+    syncStatus: "synced"
+  })
+}
+
+mutation DeleteStockItem($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  stockItem_delete(id: $id)
+}
+
+# ─── customers ───────────────────────────────────────────────────────────────
+mutation UpsertCustomer(
+  $id: String!
+  $nic: String!
+  $name: String!
+  $phone: String!
+  $description: String
+  $createdAt: Float!
+  $updatedAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  customer_upsert(data: {
+    id: $id
+    nic: $nic
+    name: $name
+    phone: $phone
+    description: $description
+    createdAt: $createdAt
+    updatedAt: $updatedAt
+    syncStatus: "synced"
+  })
+}
+
+mutation DeleteCustomer($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  customer_delete(id: $id)
+}
+
+# ─── customer_photos ─────────────────────────────────────────────────────────
+mutation UpsertCustomerPhoto(
+  $id: String!
+  $customerId: String!
+  $photoType: String!
+  $remoteUrl: String
+  $createdAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  customerPhoto_upsert(data: {
+    id: $id
+    customer: { id: $customerId }
+    photoType: $photoType
+    remoteUrl: $remoteUrl
+    createdAt: $createdAt
+  })
+}
+
+mutation DeleteCustomerPhoto($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  customerPhoto_delete(id: $id)
+}
+
+# ─── sales ───────────────────────────────────────────────────────────────────
+mutation UpsertSale(
+  $id: String!
+  $blNumber: String!
+  $branchCode: String!
+  $stockItemId: String!
+  $paymentPlan: String!
+  $downPayment: Float!
+  $totalAmount: Float!
+  $financedAmount: Float!
+  $durationMonths: Int
+  $monthlyInstallment: Float
+  $status: String!
+  $createdAt: Float!
+  $updatedAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  sale_upsert(data: {
+    id: $id
+    blNumber: $blNumber
+    branch: { id: $branchCode }
+    stockItem: { id: $stockItemId }
+    paymentPlan: $paymentPlan
+    downPayment: $downPayment
+    totalAmount: $totalAmount
+    financedAmount: $financedAmount
+    durationMonths: $durationMonths
+    monthlyInstallment: $monthlyInstallment
+    status: $status
+    createdAt: $createdAt
+    updatedAt: $updatedAt
+    syncStatus: "synced"
+  })
+}
+
+mutation DeleteSale($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  sale_delete(id: $id)
+}
+
+# ─── sale_customers ──────────────────────────────────────────────────────────
+mutation UpsertSaleCustomer(
+  $id: String!
+  $saleId: String!
+  $customerId: String!
+  $isPrimary: Boolean!
+  $sortOrder: Int!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  saleCustomer_upsert(data: {
+    id: $id
+    sale: { id: $saleId }
+    customer: { id: $customerId }
+    isPrimary: $isPrimary
+    sortOrder: $sortOrder
+  })
+}
+
+mutation DeleteSaleCustomer($saleId: String!, $customerId: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  saleCustomer_delete(key: { saleId: $saleId, customerId: $customerId })
+}
+
+# ─── easy_payment_bills ──────────────────────────────────────────────────────
+mutation UpsertEasyPaymentBill(
+  $id: String!
+  $billNumber: String!
+  $saleId: String
+  $currentBalance: Float!
+  $totalPaid: Float!
+  $lastPaymentAmount: Float
+  $lastPaymentDate: Float
+  $remainingMonths: Int!
+  $monthlyInstallment: Float!
+  $isActive: Boolean!
+  $status: String!
+  $createdAt: Float!
+  $updatedAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  easyPaymentBill_upsert(data: {
+    id: $id
+    billNumber: $billNumber
+    sale: { id: $saleId }
+    currentBalance: $currentBalance
+    totalPaid: $totalPaid
+    lastPaymentAmount: $lastPaymentAmount
+    lastPaymentDate: $lastPaymentDate
+    remainingMonths: $remainingMonths
+    monthlyInstallment: $monthlyInstallment
+    isActive: $isActive
+    status: $status
+    createdAt: $createdAt
+    updatedAt: $updatedAt
+    syncStatus: "synced"
+  })
+}
+
+mutation DeleteEasyPaymentBill($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  easyPaymentBill_delete(id: $id)
+}
+
+# ─── easy_payment_transactions ───────────────────────────────────────────────
+mutation InsertEasyPaymentTransaction(
+  $id: String!
+  $billId: String!
+  $transactionType: String!
+  $amount: Float
+  $remainingMonths: Int
+  $newMonthlyInstallment: Float
+  $notes: String
+  $branchCode: String!
+  $createdAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  easyPaymentTransaction_insert(data: {
+    id: $id
+    bill: { id: $billId }
+    transactionType: $transactionType
+    amount: $amount
+    remainingMonths: $remainingMonths
+    newMonthlyInstallment: $newMonthlyInstallment
+    notes: $notes
+    branch: { id: $branchCode }
+    createdAt: $createdAt
+    syncStatus: "synced"
+  })
+}
+
+# ─── b2b_orders ──────────────────────────────────────────────────────────────
+mutation UpsertB2bOrder(
+  $id: String!
+  $orderRef: String!
+  $sourceBranchId: String!
+  $destinationBranchId: String!
+  $status: String!
+  $notes: String
+  $createdAt: Float!
+  $updatedAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  b2bOrder_upsert(data: {
+    id: $id
+    orderRef: $orderRef
+    sourceBranch: { id: $sourceBranchId }
+    destinationBranch: { id: $destinationBranchId }
+    status: $status
+    notes: $notes
+    createdAt: $createdAt
+    updatedAt: $updatedAt
+    syncStatus: "synced"
+  })
+}
+
+mutation DeleteB2bOrder($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  b2bOrder_delete(id: $id)
+}
+
+# ─── b2b_order_items ─────────────────────────────────────────────────────────
+mutation UpsertB2bOrderItem(
+  $id: String!
+  $orderId: String!
+  $stockItemId: String
+  $serialNo: String!
+  $modelNo: String!
+  $notes: String
+  $sortOrder: Int!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  b2bOrderItem_upsert(data: {
+    id: $id
+    order: { id: $orderId }
+    stockItem: { id: $stockItemId }
+    serialNo: $serialNo
+    modelNo: $modelNo
+    notes: $notes
+    sortOrder: $sortOrder
+  })
+}
+
+mutation DeleteB2bOrderItem($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  b2bOrderItem_delete(id: $id)
+}
+
+# ─── cris_records ────────────────────────────────────────────────────────────
+mutation UpsertCrisRecord(
+  $id: String!
+  $customerId: String
+  $dNumber: String!
+  $bNumber: String!
+  $balance: Float!
+  $status: String!
+  $createdAt: Float!
+  $updatedAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  crisRecord_upsert(data: {
+    id: $id
+    customer: { id: $customerId }
+    dNumber: $dNumber
+    bNumber: $bNumber
+    balance: $balance
+    status: $status
+    createdAt: $createdAt
+    updatedAt: $updatedAt
+    syncStatus: "synced"
+  })
+}
+
+mutation DeleteCrisRecord($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  crisRecord_delete(id: $id)
+}
+
+# ─── incoming_stock_log ──────────────────────────────────────────────────────
+mutation InsertIncomingStockLog(
+  $id: String!
+  $logType: String!
+  $serialNo: String!
+  $modelNo: String!
+  $productName: String!
+  $branchCode: String!
+  $referenceId: String
+  $notes: String
+  $createdAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  incomingStockLog_insert(data: {
+    id: $id
+    logType: $logType
+    serialNo: $serialNo
+    modelNo: $modelNo
+    productName: $productName
+    branch: { id: $branchCode }
+    referenceId: $referenceId
+    notes: $notes
+    createdAt: $createdAt
+    syncStatus: "synced"
+  })
+}
+
+# ─── device_registrations ─────────────────────────────────────────────────────
+mutation UpsertDeviceRegistration(
+  $id: String!
+  $branchCode: String!
+  $deviceLabel: String
+  $createdAt: Float!
+  $updatedAt: Float!
+) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  deviceRegistration_upsert(data: {
+    id: $id
+    branchCode: $branchCode
+    deviceLabel: $deviceLabel
+    createdAt: $createdAt
+    updatedAt: $updatedAt
+  })
+}
+
+mutation DeleteDeviceRegistration($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  deviceRegistration_delete(id: $id)
+}

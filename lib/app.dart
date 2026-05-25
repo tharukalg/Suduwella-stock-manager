@@ -12,7 +12,7 @@ class App extends StatelessWidget {
       title: AppConfig.instance.appName,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: AppConfig.instance.showDebugBanner,
       routerConfig: AppRouter.router,
     );

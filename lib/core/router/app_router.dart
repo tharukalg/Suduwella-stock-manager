@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/Cris/views/CrisPage.dart';
+import '../../features/home/presentation/homepage/views/home_page.dart';
+import '../../features/home/presentation/outgoingpage/views/outgoing_page.dart';
+import '../../features/home/presentation/stockpage/views/stock_page.dart';
+import '../database/db_viewer_page.dart';
 import '../theme/MainAppShell.dart';
 
 abstract class Routes {
   static const home = '/';
   static const outgoing = '/outgoing';
-  static const entry = '/entry';
+  static const cris = '/cris';
   static const stock = '/stock';
 
   static const fullScreenDetails = '/details';
+  static const dbViewer = '/db-viewer';
 }
 
 class AppRouter {
@@ -37,18 +42,16 @@ class AppRouter {
           GoRoute(
             path: Routes.outgoing,
             builder: (context, state) =>
-                const Center(child: Text('Outgoing Page')),
+                const OutgoingPage(),
           ),
           GoRoute(
-            path: Routes.entry,
-            builder: (context, state) =>
-                const Center(child: Text('Entry Page')),
+            path: Routes.cris,
+            builder: (context, state) => const CrisPage(),
           ),
           GoRoute(
             path: Routes.stock,
-            builder: (context, state) =>
-                const Center(child: Text('Stock Page')),
-          ),
+            builder: (context, state) => const StockPage(),
+          )
         ],
       ),
       GoRoute(
@@ -61,6 +64,11 @@ class AppRouter {
                 child: Text('No bottom nav or global app bar here!')),
           );
         },
+      ),
+      GoRoute(
+        path: Routes.dbViewer,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const DbViewerPage(),
       ),
     ],
   );

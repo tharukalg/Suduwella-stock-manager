@@ -1,0 +1,235 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Suduwella Stock Manager — Data Connect Queries
+# @auth(level: USER_ANON) → no Firebase Auth required (MVP / development).
+# Upgrade to @auth(level: USER) once Firebase Auth is added.
+# insecureReason: This is an internal staff-only app; all authenticated users
+#                 are trusted employees — no per-user data isolation needed.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── branches ────────────────────────────────────────────────────────────────
+query GetAllBranches @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  branches {
+    id
+    name
+    isActive
+  }
+}
+
+# ─── products ────────────────────────────────────────────────────────────────
+query GetAllProducts @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  products(orderBy: [{ productName: ASC }]) {
+    id
+    productName
+    modelNo
+    price
+    imagePath
+    createdAt
+    updatedAt
+  }
+}
+
+query GetProductByModelNo($modelNo: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  products(where: { modelNo: { eq: $modelNo } }) {
+    id
+    productName
+    modelNo
+    price
+    imagePath
+  }
+}
+
+# ─── stock_items ─────────────────────────────────────────────────────────────
+query GetStockByBranch($branchCode: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  stockItems(where: { branch: { id: { eq: $branchCode } } }) {
+    id
+    serialNo
+    status
+    product {
+      id
+      productName
+      modelNo
+    }
+    branch {
+      id
+      name
+    }
+    createdAt
+    updatedAt
+  }
+}
+
+query GetStockItemBySerial($serialNo: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  stockItems(where: { serialNo: { eq: $serialNo } }) {
+    id
+    serialNo
+    status
+    product {
+      id
+      productName
+      modelNo
+    }
+    branch {
+      id
+      name
+    }
+  }
+}
+
+# ─── customers ───────────────────────────────────────────────────────────────
+query GetCustomerByNic($nic: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  customers(where: { nic: { eq: $nic } }) {
+    id
+    nic
+    name
+    phone
+    description
+    createdAt
+  }
+}
+
+query GetCustomerByPhone($phone: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  customers(where: { phone: { eq: $phone } }) {
+    id
+    nic
+    name
+    phone
+    description
+  }
+}
+
+# ─── sales ───────────────────────────────────────────────────────────────────
+query GetSaleByBlNumber($blNumber: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  sales(where: { blNumber: { eq: $blNumber } }) {
+    id
+    blNumber
+    paymentPlan
+    downPayment
+    totalAmount
+    financedAmount
+    durationMonths
+    monthlyInstallment
+    status
+    createdAt
+    branch { id name }
+    stockItem { id serialNo product { productName modelNo } }
+  }
+}
+
+query GetActiveSalesByBranch($branchCode: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  sales(where: {
+    branch: { id: { eq: $branchCode } }
+    status: { eq: "active" }
+  }) {
+    id
+    blNumber
+    paymentPlan
+    totalAmount
+    status
+    createdAt
+    stockItem { id serialNo product { productName modelNo } }
+  }
+}
+
+# ─── easy_payment_bills ──────────────────────────────────────────────────────
+query GetBillByNumber($billNumber: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  easyPaymentBills(where: { billNumber: { eq: $billNumber } }) {
+    id
+    billNumber
+    currentBalance
+    totalPaid
+    lastPaymentAmount
+    lastPaymentDate
+    remainingMonths
+    monthlyInstallment
+    isActive
+    status
+    createdAt
+    sale { id blNumber }
+  }
+}
+
+query GetActiveBills @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  easyPaymentBills(where: { isActive: { eq: true } },
+                   orderBy: [{ createdAt: DESC }]) {
+    id
+    billNumber
+    currentBalance
+    remainingMonths
+    monthlyInstallment
+    status
+  }
+}
+
+# ─── cris_records ────────────────────────────────────────────────────────────
+query GetCrisRecordByDNumber($dNumber: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  crisRecords(where: { dNumber: { eq: $dNumber } }) {
+    id
+    dNumber
+    bNumber
+    balance
+    status
+    customer { id name nic phone }
+  }
+}
+
+query GetOverdueCrisRecords @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  crisRecords(where: { status: { eq: "overdue" } },
+              orderBy: [{ balance: DESC }]) {
+    id
+    dNumber
+    bNumber
+    balance
+    status
+    customer { id name nic phone }
+  }
+}
+
+# ─── b2b_orders ──────────────────────────────────────────────────────────────
+query GetB2bOrdersByBranch($branchCode: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  b2bOrders(where: {
+    sourceBranch: { id: { eq: $branchCode } }
+  }, orderBy: [{ createdAt: DESC }]) {
+    id
+    orderRef
+    status
+    notes
+    createdAt
+    sourceBranch { id name }
+    destinationBranch { id name }
+  }
+}
+
+# ─── incoming_stock_log ──────────────────────────────────────────────────────
+query GetIncomingLogByBranch($branchCode: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  incomingStockLogs(where: {
+    branch: { id: { eq: $branchCode } }
+  }, orderBy: [{ createdAt: DESC }]) {
+    id
+    logType
+    serialNo
+    modelNo
+    productName
+    referenceId
+    notes
+    createdAt
+  }
+}
+
+# ─── device_registrations ─────────────────────────────────────────────────────
+query GetDeviceRegistration($id: String!) @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  deviceRegistrations(where: { id: { eq: $id } }) {
+    id
+    branchCode
+    deviceLabel
+    updatedAt
+  }
+}
+
+query GetAllDeviceRegistrations @auth(level: USER_ANON, insecureReason: "Internal staff app — all authenticated users are trusted employees") {
+  deviceRegistrations(orderBy: [{ updatedAt: DESC }]) {
+    id
+    branchCode
+    deviceLabel
+    updatedAt
+  }
+}

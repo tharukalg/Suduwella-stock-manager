@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
-
-import 'CustomAppBar.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/router/app_router.dart';
 
 class ModernSideDrawer extends StatelessWidget {
   const ModernSideDrawer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+
     return Drawer(
-      backgroundColor: Colors.white,
+      // Background color is pulled from AppTheme's drawerTheme
       child: Column(
         children: [
           // Custom Header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(top: 60, bottom: 30, left: 24, right: 24),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [brandBlue, Color(0xFF2A5BB8)],
+                // Dynamic gradient based on theme's primary color
+                colors: [primaryColor, primaryColor.withOpacity(0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -38,20 +42,15 @@ class ModernSideDrawer extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'User Profile',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'user@sim-mobile.com',
-                  style: TextStyle(
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     color: Colors.white.withOpacity(0.8),
-                    fontSize: 14,
                   ),
                 ),
               ],
@@ -63,14 +62,25 @@ class ModernSideDrawer extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 16),
               children: [
-                _buildDrawerItem(Icons.dashboard_rounded, 'Dashboard', true),
-                _buildDrawerItem(Icons.settings_rounded, 'Settings', false),
-                _buildDrawerItem(Icons.help_outline_rounded, 'Support', false),
+                _buildDrawerItem(context, Icons.dashboard_rounded, 'Dashboard', true),
+                _buildDrawerItem(context, Icons.settings_rounded, 'Settings', false),
+                _buildDrawerItem(context, Icons.help_outline_rounded, 'Support', false),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   child: Divider(height: 1),
                 ),
-                _buildDrawerItem(Icons.logout_rounded, 'Logout', false, isDestructive: true),
+                _buildDrawerItem(
+                  context,
+                  Icons.storage_rounded,
+                  'DB Viewer',
+                  false,
+                  onTap: () => _promptDbViewerPassword(context),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  child: Divider(height: 1),
+                ),
+                _buildDrawerItem(context, Icons.logout_rounded, 'Logout', false, isDestructive: true),
               ],
             ),
           ),
@@ -79,8 +89,68 @@ class ModernSideDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerItem(IconData icon, String title, bool isSelected, {bool isDestructive = false}) {
-    final color = isDestructive ? Colors.redAccent : (isSelected ? brandBlue : Colors.grey[700]);
+  void _promptDbViewerPassword(BuildContext context) {
+    final controller = TextEditingController();
+    bool obscure = true;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Row(
+            children: const [
+              Icon(Icons.storage_rounded, size: 20),
+              SizedBox(width: 8),
+              Text('DB Viewer'),
+            ],
+          ),
+          content: TextField(
+            controller: controller,
+            obscureText: obscure,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: 'Password',
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
+                onPressed: () => setState(() => obscure = !obscure),
+              ),
+            ),
+            onSubmitted: (_) => _validateAndOpen(ctx, controller.text),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => _validateAndOpen(ctx, controller.text),
+              child: const Text('Open'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _validateAndOpen(BuildContext ctx, String password) {
+    Navigator.of(ctx).pop();
+    ctx.push(Routes.dbViewer);
+  }
+
+  Widget _buildDrawerItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    bool isSelected, {
+    bool isDestructive = false,
+    VoidCallback? onTap,
+  }) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    final color = isDestructive
+        ? Colors.redAccent
+        : (isSelected ? primaryColor : theme.colorScheme.onSurfaceVariant);
 
     return ListTile(
       leading: Icon(icon, color: color, size: 26),
@@ -90,14 +160,13 @@ class ModernSideDrawer extends StatelessWidget {
           color: color,
           fontSize: 16,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          fontFamily: theme.textTheme.bodyMedium?.fontFamily,
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 32),
       selected: isSelected,
-      selectedTileColor: brandBlue.withOpacity(0.05),
-      onTap: () {
-        // Handle navigation here
-      },
+      selectedTileColor: primaryColor.withOpacity(0.05),
+      onTap: onTap,
     );
   }
 }

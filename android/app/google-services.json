@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "138672203429",
+    "project_id": "suduwella-stock-manager-f7d90",
+    "storage_bucket": "suduwella-stock-manager-f7d90.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:138672203429:android:f654c48731dbc3f2984f4c",
+        "android_client_info": {
+          "package_name": "com.example.suduwella_stock_manager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClzSWKzQBOH05y83EjBFHpgQxI06OxDL0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

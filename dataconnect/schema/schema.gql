@@ -1,0 +1,198 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Suduwella Stock Manager — Firebase Data Connect Schema
+# Mirrors the SQLite schema in lib/core/database/database_tables.dart
+# All timestamps are Unix milliseconds stored as Float (64-bit safe).
+# sync_status: 'synced' | 'pending' | 'conflict'
+# sync_queue and app_settings are local-only — NOT mirrored here.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── 1. branches ─────────────────────────────────────────────────────────────
+type Branch @table(name: "branches", key: "id") {
+  id: String!
+  name: String!
+  isActive: Boolean! @col(name: "is_active") @default(expr: "true")
+}
+
+# ─── 2. products ─────────────────────────────────────────────────────────────
+type Product @table(name: "products", key: "id") {
+  id: String!
+  productName: String! @col(name: "product_name")
+  modelNo: String!     @col(name: "model_no") @unique
+  price: Float!        @default(expr: "0")
+  imagePath: String    @col(name: "image_path")
+  createdAt: Float!    @col(name: "created_at")
+  updatedAt: Float!    @col(name: "updated_at")
+  syncStatus: String!  @col(name: "sync_status") @default(expr: "'pending'")
+}
+
+# ─── 3. stock_items ──────────────────────────────────────────────────────────
+# status: 'available' | 'sold' | 'b2b_transit' | 'recovered' | 'written_off'
+type StockItem @table(name: "stock_items", key: "id") {
+  id: String!
+  product: Product!
+  branch: Branch!
+  serialNo: String!   @col(name: "serial_no") @unique
+  status: String!     @default(expr: "'available'")
+  createdAt: Float!   @col(name: "created_at")
+  updatedAt: Float!   @col(name: "updated_at")
+  syncStatus: String! @col(name: "sync_status") @default(expr: "'pending'")
+}
+
+# ─── 4. customers ────────────────────────────────────────────────────────────
+type Customer @table(name: "customers", key: "id") {
+  id: String!
+  nic: String!        @unique
+  name: String!
+  phone: String!
+  description: String
+  createdAt: Float!   @col(name: "created_at")
+  updatedAt: Float!   @col(name: "updated_at")
+  syncStatus: String! @col(name: "sync_status") @default(expr: "'pending'")
+}
+
+# ─── 5. customer_photos ──────────────────────────────────────────────────────
+# photo_type: 'id_photo' | 'selfie'
+# remoteUrl is populated after uploading to Firebase Storage.
+# localPath is not stored in the cloud.
+type CustomerPhoto @table(name: "customer_photos", key: "id") {
+  id: String!
+  customer: Customer!
+  photoType: String!  @col(name: "photo_type")
+  remoteUrl: String   @col(name: "remote_url")
+  createdAt: Float!   @col(name: "created_at")
+}
+
+# ─── 6. sales ────────────────────────────────────────────────────────────────
+# payment_plan: 'interest_free' | 'direct_easy_payment'
+# status:       'active' | 'settled' | 'recovered'
+type Sale @table(name: "sales", key: "id") {
+  id: String!
+  blNumber: String!          @col(name: "bl_number") @unique
+  branch: Branch!
+  stockItem: StockItem!
+  paymentPlan: String!       @col(name: "payment_plan")
+  downPayment: Float!        @col(name: "down_payment")
+  totalAmount: Float!        @col(name: "total_amount")
+  financedAmount: Float!     @col(name: "financed_amount")
+  durationMonths: Int        @col(name: "duration_months")
+  monthlyInstallment: Float  @col(name: "monthly_installment")
+  status: String!            @default(expr: "'active'")
+  createdAt: Float!          @col(name: "created_at")
+  updatedAt: Float!          @col(name: "updated_at")
+  syncStatus: String!        @col(name: "sync_status") @default(expr: "'pending'")
+}
+
+# ─── 7. sale_customers ───────────────────────────────────────────────────────
+# Junction table — one sale can have multiple customers (guarantors).
+# isPrimary = true means this is the main buyer.
+type SaleCustomer @table(name: "sale_customers", key: ["sale", "customer"]) {
+  id: String!         # kept for cross-referencing with SQLite
+  sale: Sale!
+  customer: Customer!
+  isPrimary: Boolean! @col(name: "is_primary") @default(expr: "false")
+  sortOrder: Int!     @col(name: "sort_order") @default(expr: "0")
+}
+
+# ─── 8. easy_payment_bills ───────────────────────────────────────────────────
+# status: 'active' | 'settled' | 'recovered'
+type EasyPaymentBill @table(name: "easy_payment_bills", key: "id") {
+  id: String!
+  billNumber: String!        @col(name: "bill_number") @unique
+  sale: Sale
+  currentBalance: Float!     @col(name: "current_balance")
+  totalPaid: Float!          @col(name: "total_paid") @default(expr: "0")
+  lastPaymentAmount: Float   @col(name: "last_payment_amount")
+  lastPaymentDate: Float     @col(name: "last_payment_date")
+  remainingMonths: Int!      @col(name: "remaining_months")
+  monthlyInstallment: Float! @col(name: "monthly_installment")
+  isActive: Boolean!         @col(name: "is_active") @default(expr: "true")
+  status: String!            @default(expr: "'active'")
+  createdAt: Float!          @col(name: "created_at")
+  updatedAt: Float!          @col(name: "updated_at")
+  syncStatus: String!        @col(name: "sync_status") @default(expr: "'pending'")
+}
+
+# ─── 9. easy_payment_transactions ────────────────────────────────────────────
+# Append-only ledger — never update rows, only insert.
+# transaction_type: 'payment' | 'plan_adjustment' | 'settled' | 'recovered'
+type EasyPaymentTransaction @table(name: "easy_payment_transactions", key: "id") {
+  id: String!
+  bill: EasyPaymentBill!
+  transactionType: String!      @col(name: "transaction_type")
+  amount: Float
+  remainingMonths: Int          @col(name: "remaining_months")
+  newMonthlyInstallment: Float  @col(name: "new_monthly_installment")
+  notes: String
+  branch: Branch!
+  createdAt: Float!             @col(name: "created_at")
+  syncStatus: String!           @col(name: "sync_status") @default(expr: "'pending'")
+}
+
+# ─── 10. b2b_orders ──────────────────────────────────────────────────────────
+# status: 'pending' | 'dispatched' | 'received' | 'cancelled'
+# Two separate Branch relations use different field names to avoid conflicts.
+type B2bOrder @table(name: "b2b_orders", key: "id") {
+  id: String!
+  orderRef: String!          @col(name: "order_ref") @unique
+  sourceBranch: Branch!
+  destinationBranch: Branch!
+  status: String!            @default(expr: "'pending'")
+  notes: String
+  createdAt: Float!          @col(name: "created_at")
+  updatedAt: Float!          @col(name: "updated_at")
+  syncStatus: String!        @col(name: "sync_status") @default(expr: "'pending'")
+}
+
+# ─── 11. b2b_order_items ─────────────────────────────────────────────────────
+# stockItem is nullable — scanned items may not be in stock_items yet.
+type B2bOrderItem @table(name: "b2b_order_items", key: "id") {
+  id: String!
+  order: B2bOrder!
+  stockItem: StockItem
+  serialNo: String! @col(name: "serial_no")
+  modelNo: String!  @col(name: "model_no")
+  notes: String
+  sortOrder: Int!   @col(name: "sort_order") @default(expr: "0")
+}
+
+# ─── 12. cris_records ────────────────────────────────────────────────────────
+# customer is nullable — CRIS records may arrive before a customer is matched.
+# status: 'overdue' | 'review' | 'settled'
+type CrisRecord @table(name: "cris_records", key: "id") {
+  id: String!
+  customer: Customer
+  dNumber: String!  @col(name: "d_number") @unique
+  bNumber: String!  @col(name: "b_number")
+  balance: Float!
+  status: String!   @default(expr: "'overdue'")
+  createdAt: Float! @col(name: "created_at")
+  updatedAt: Float! @col(name: "updated_at")
+  syncStatus: String! @col(name: "sync_status") @default(expr: "'pending'")
+}
+
+# ─── 14. device_registrations ────────────────────────────────────────────────
+# Maps a unique device UUID to its assigned branch.
+# Created by an admin through the in-app dev screen; read on every app launch.
+type DeviceRegistration @table(name: "device_registrations", key: "id") {
+  id: String!              # the device UUID (generated once, stored in app_settings)
+  branchCode: String!      @col(name: "branch_code")
+  deviceLabel: String      @col(name: "device_label")   # optional human name (e.g. "KH POS 1")
+  createdAt: Float!        @col(name: "created_at")
+  updatedAt: Float!        @col(name: "updated_at")
+}
+
+# ─── 13. incoming_stock_log ───────────────────────────────────────────────────
+# Audit trail for every item that physically arrives at a branch.
+# log_type: 'new_item' | 'recovered_item'
+type IncomingStockLog @table(name: "incoming_stock_log", key: "id") {
+  id: String!
+  logType: String!     @col(name: "log_type")
+  serialNo: String!    @col(name: "serial_no")
+  modelNo: String!     @col(name: "model_no")
+  productName: String! @col(name: "product_name")
+  branch: Branch!
+  referenceId: String  @col(name: "reference_id")
+  notes: String
+  createdAt: Float!    @col(name: "created_at")
+  syncStatus: String!  @col(name: "sync_status") @default(expr: "'pending'")
+}

@@ -12,9 +12,13 @@ class ResponsiveBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = Theme.of(context).brightness == Brightness.light
+        ? Colors.white
+        : Theme.of(context).colorScheme.surface;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bgColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -28,10 +32,10 @@ class ResponsiveBottomNavBar extends StatelessWidget {
           height: 65,
           child: Row(
             children: [
-              _buildNavItem(0, Icons.grid_view_rounded, 'HOME'),
-              _buildNavItem(1, Icons.arrow_outward_rounded, 'OUTGOING'),
-              _buildNavItem(2, Icons.qr_code_scanner_rounded, 'ENTRY'),
-              _buildNavItem(3, Icons.inventory_2_outlined, 'STOCK'),
+              _buildNavItem(context, 0, Icons.grid_view_rounded, 'HOME'),
+              _buildNavItem(context, 1, Icons.arrow_outward_rounded, 'OUTGOING'),
+              _buildNavItem(context, 2, Icons.qr_code_scanner_rounded, 'Cris'),
+              _buildNavItem(context, 3, Icons.inventory_2_outlined, 'STOCK'),
             ],
           ),
         ),
@@ -39,13 +43,14 @@ class ResponsiveBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
+  Widget _buildNavItem(BuildContext context, int index, IconData icon, String label) {
     final isSelected = selectedIndex == index;
 
-    // Design matching colors
-    final activeColor = const Color(0xFF1C4291);
-    final activeBackground = const Color(0xFFE2EBF6);
-    final inactiveColor = const Color(0xFFA5B2BE);
+    // Dynamically fetch colors from the AppTheme
+    final colorScheme = Theme.of(context).colorScheme;
+    final activeColor = colorScheme.primary;
+    final activeBackground = colorScheme.primaryContainer;
+    final inactiveColor = colorScheme.onSurfaceVariant;
 
     return Expanded(
       child: GestureDetector(
@@ -74,11 +79,10 @@ class ResponsiveBottomNavBar extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: TextStyle(
+                // Merging theme text styles with dynamic colors
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: isSelected ? activeColor : inactiveColor,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  fontSize: 11,
-                  letterSpacing: 1.2,
                 ),
               ),
             ],
